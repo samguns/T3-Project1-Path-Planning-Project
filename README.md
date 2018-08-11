@@ -22,18 +22,24 @@ My path planner borrowed as many code from the final exercise in `Behavior Plann
   * Gather up all potential trajectories for Ego vehicle.
 
   By comparing the predicted information with Ego vehicle's position and velocity, I generate a two point trajectory for each potential next states (among all states of FSM). Here's some notes I’d like to point out.
-
-	* The trajectory tells us in which lane and at what speed it should be for the one-second long future period.
-	* To avoid an uncomfortable changing acceleration rate (known as jerk), I limited the maximum acceleration of Ego vehicle to be 0.1 m/s^2, and set a 25-meters safe distance buffer. So that when it comes to braking, a relatively slower deceleration won’t make our Ego vehicle bumps into cars ahead.
-	* In `prepare lane change left/right` state, not only other cars in the lane next to us should be checked, but those in next to that lane, if it’s available, should be considered as well. For example, in our 3-lane highway, we are in the leftmost lane, namingly 0. We should check traffics not only in lane 1, but also in lane 2. Because if we think it’s possible for us to change from lane 0 to lane 1, and if another car in lane 2 holds this same idea that it can turn into lane 1, and as it happens, we’re almost running side by side. A collision is nearly inevitable.
-	* There exists some chance that right after a lane change has been realized, it’s possible to do another attempts. To avoid such seemingly consecutive lane changing behaviors, I suppressed it by adding a timer that only if two seconds elapsed, could another lane changing maneuver be considered.
+  
+    * The trajectory tells us in which lane and at what speed it should be for the one-second long future period.
+    
+    * To avoid an uncomfortable changing acceleration rate (known as jerk), I limited the maximum acceleration of Ego vehicle to be 0.1 m/s^2, and set a 25-meters safe distance buffer. So that when it comes to braking, a relatively slower deceleration won’t make our Ego vehicle bumps into cars ahead.
+    
+    * In `prepare lane change left/right` state, not only other cars in the lane next to us should be checked, but those in next to that lane, if it’s available, should be considered as well. For example, in our 3-lane highway, we are in the leftmost lane, namingly 0. We should check traffics not only in lane 1, but also in lane 2. Because if we think it’s possible for us to change from lane 0 to lane 1, and if another car in lane 2 holds this same idea that it can turn into lane 1, and as it happens, we’re almost running side by side. A collision is nearly inevitable.
+    
+    * There exists some chance that right after a lane change has been realized, it’s possible to do another attempts. To avoid such seemingly consecutive lane changing behaviors, I suppressed it by adding a timer that only if two seconds elapsed, could another lane changing maneuver be considered.
 
   * Calculate cost of each trajectory and choose the lowest.
 
   I came up with three simple cost functions in deciding which trajectory is the best. They are,
-	* `inefficiency_cost`, which has the highest weight, penalizes a deceleration maneuver.
-	* `traffic_pool_cost`, which checks the density of a lane 100 meters in front that we’re about to turn into. It helps in choosing a preferable lane that prevents us from surrounded by slower vehicles around.
-	* The lowest weight cost function `lane_speed_cost` penalizes the lane that we intend to change into has a relatively slower car, when we’re able to change to left lane or right lane.
+  
+    * `inefficiency_cost`, which has the highest weight, penalizes a deceleration maneuver.
+	
+    * `traffic_pool_cost`, which checks the density of a lane 100 meters in front that we’re about to turn into. It helps in choosing a preferable lane that prevents us from surrounded by slower vehicles around.
+	
+    * The lowest weight cost function `lane_speed_cost` penalizes the lane that we intend to change into has a relatively slower car, when we’re able to change to left lane or right lane.
 
 ### 3. Discusses improvements.
 In every processing cycle, I think it might be possible to maintain a belief table for every vehicle feeds from sensor fusion. That is, for a given vehicle, maintains its `keep straight`, `change lane left` and `change lane right` belief in a Gaussian distribution. I believe such belief possibilities could help in generating a better next maneuver.
